@@ -1,7 +1,7 @@
 apiVersion: sparkoperator.k8s.io/v1beta2
 kind: SparkApplication
 metadata:
-  name: tpcds-benchmark-data-generation-1g
+  name: tpcds-benchmark-data-generation-1000g
 spec:
   type: Scala
   image: quay.io/guimou/spark-benchmark:s3.0.1-h3.3.0_v0.0.1
@@ -11,13 +11,13 @@ spec:
   mode: cluster
   arguments:
   # TPC-DS data location
-    - "s3a://YOUR_BUCKET/TPCDS-TEST-1G"
+    - "s3a://YOUR_BUCKET/TPCDS-TEST-1000G"
   # Path to kit in the docker image
     - "/opt/tpcds-kit/tools"
   # Data Format
     - "parquet"
   # Scale factor (in GB)
-    - "1"
+    - "1000"
   # Generate data num partitions
     - "100"
   # Create the partitioned fact tables

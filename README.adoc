@@ -4,6 +4,8 @@ The following instructions are derived from link:https://github.com/aws-samples/
 
 We will built tools and run TPS-DS benchmarks on Spark 3.0.1 using an S3 storage data lake.
 
+If you want to directly Generate the Data and Run the Benchmark using pre-built images, you can directly go to the <<run,Run the benchmark>> section.
+
 == Prerequisite
 
 You will need a pre-built Spark image with the S3 connector built in. Refer to link:https://github.com/guimou/spark-on-openshift[this project].
@@ -58,6 +60,7 @@ docker tag spark-benchmark:s3.0.1-h3.3.0_v0.0.1 quay.io/guimou/spark-benchmark:s
 docker push quay.io/guimou/spark-benchmark:s3.0.1-h3.3.0_v0.0.1
 ----
 
+[[run]]
 == Run the benchmark
 
 In the `examples` folder you will find different examples to create the Datasets or Run the benchmark. You can adapt them to your environment: data location, logs location,...
@@ -78,6 +81,12 @@ From the `test` folder:
 oc apply -f obc-tpcds-data.yaml
 ----
 
+=== History Server
+
+To make it easier to retrieve all the data from the generation and the benchmark, point your history server to the same bucket.
+
+NOTE: you must create a `logs-dir` folder in this bucket prior to launching the history server (populate it with a hidden empty file like `.s3keep`).
+
 === CPU and Memory limits adjustments
 
 By default OpenShift places restrictions on the size of the pods you can launch, which may be an issue for intensive workloads. We must adjust what the Spark-Operator is allowed to do when launching the driver and the executors.
@@ -88,11 +97,28 @@ From the OpenShift UI, as a cluster-admin, go to Administration->LimitRanges and
 
 From the `examples` folder, review and apply one of the file called `tpcds-data-generation-SIZE.yaml`. The `SIZE` in the filename indicates the size of the synthetic dataset created, in GB.
 In the file, choose the number or executors you want to run along with their sizing.
+You must also replace the placeholders with the values for your bucket namen, access key and secret key.
 
-.Run the data generation
+.Run the data generation for a 1G dataset
 [source,bash]
 ----
 oc apply -f tpcds-data-generation-1G.yaml
 ----
+
+=== Benckmark
+
+From the `examples` folder, review and apply one of the file called `tpcds-benchmark-SIZE.yaml`. The `SIZE` in the filename indicates the size of the synthetic dataset created, in GB.
+In the file, choose the number or executors you want to run along with their sizing.
+You must also replace the placeholders with the values for your bucket namen, access key and secret key.
+
+.Run the data generation for a 1G dataset
+[source,bash]
+----
+oc apply -f tpcds-benchmark-1G.yaml
+----
+
+Apart from the History Server, all the Results are saved in `YOUR_BUCKET/TPCDS-TEST-1G-RESULT`.
+
+NOTE: Adapat all those instructions for different sizes of datasets.
 
 

@@ -1,34 +1,41 @@
-apiVersion: sparkoperator.k8s.io/v1beta2
+apiVersion: "sparkoperator.k8s.io/v1beta2"
 kind: SparkApplication
 metadata:
-  name: tpcds-benchmark-data-generation-1g
+  name: tpcds-benchmark-sql-1000g
 spec:
   type: Scala
   image: quay.io/guimou/spark-benchmark:s3.0.1-h3.3.0_v0.0.1
   sparkVersion: 3.0.1
-  mainClass: com.amazonaws.eks.tpcds.DataGeneration
+  mainClass: com.amazonaws.eks.tpcds.BenchmarkSQL
   mainApplicationFile: local:///opt/spark/examples/jars/eks-spark-benchmark-assembly-1.0.jar
   mode: cluster
   arguments:
-  # TPC-DS data location
-    - "s3a://YOUR_BUCKET/TPCDS-TEST-1G"
+  # TPC-DS data localtion
+    - "s3a://YOUR_BUCKET/TPCDS-TEST-1000G"
+  # results location
+    - "s3a://YOUR_BUCKET/TPCDS-TEST-1000G-RESULT"
   # Path to kit in the docker image
     - "/opt/tpcds-kit/tools"
   # Data Format
     - "parquet"
   # Scale factor (in GB)
+    - "1000"
+  # Number of iterations
     - "1"
-  # Generate data num partitions
-    - "100"
-  # Create the partitioned fact tables
+  # Optimize queries
     - "false"
-  # Shuffle to get partitions coalesced into single files.
-    - "false"
+  # Filter queries, will run all if empty - "q70-v2.4,q82-v2.4,q64-v2.4"
+    - ""
   # Logging set to WARN
     - "true"
   sparkConf:
     "spark.speculation": "false"
     "spark.network.timeout": "2400"
+    # TPCDs Specific
+    "spark.sql.broadcastTimeout": "7200"
+    "spark.sql.crossJoin.enabled": "true"
+    "spark.sql.parquet.mergeSchema": "false"
+    "spark.sql.parquet.filterPushdown": "true"
     # History Server
     "spark.eventLog.enabled": "true"
     "spark.eventLog.dir": "s3a://YOUR_BUCKET/logs-dir/"
@@ -60,7 +67,7 @@ spec:
     cores: 1
     coreLimit: "1"
     memory: "8000m"
-    memoryOverhead: 2g
+    memoryOverhead: "2g"
   restartPolicy:
     type: Never
   monitoring:

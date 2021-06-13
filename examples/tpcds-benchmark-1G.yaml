@@ -11,9 +11,9 @@ spec:
   mode: cluster
   arguments:
   # TPC-DS data localtion
-    - "s3a://history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3/TPCDS-TEST-1G"
+    - "s3a://YOUR_BUCKET/TPCDS-TEST-1G"
   # results location
-    - "s3a://history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3/TPCDS-TEST-1G-RESULT"
+    - "s3a://YOUR_BUCKET/TPCDS-TEST-1G-RESULT"
   # Path to kit in the docker image
     - "/opt/tpcds-kit/tools"
   # Data Format
@@ -36,6 +36,9 @@ spec:
     "spark.sql.crossJoin.enabled": "true"
     "spark.sql.parquet.mergeSchema": "false"
     "spark.sql.parquet.filterPushdown": "true"
+    # History Server
+    "spark.eventLog.enabled": "true"
+    "spark.eventLog.dir": "s3a://YOUR_BUCKET/logs-dir/"
     # S3 Configuration
     "spark.hadoop.fs.s3a.connection.timeout": "1200000"
     "spark.hadoop.fs.s3a.connection.maximum": "200"
@@ -46,11 +49,11 @@ spec:
     "spark.hadoop.fs.s3a.committer.name": "directory"
     "spark.hadoop.fs.s3a.committer.staging.conflict-mode": "append"
     # S3 Configuration for History server
-    "spark.hadoop.fs.s3a.bucket.history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3.endpoint": "rook-ceph-rgw-ocs-storagecluster-cephobjectstore.openshift-storage.svc"
-    "spark.hadoop.fs.s3a.bucket.history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3.access.key": "BSYJVOLA2SVU1USCAM2I"
-    "spark.hadoop.fs.s3a.bucket.history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3.secret.key": "JauG0OhwUVMqCztBMtp5E8bVGwSJT6QDzCxN7S5L"
-    "spark.hadoop.fs.s3a.bucket.history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3.path.style.access": "true"
-    "spark.hadoop.fs.s3a.bucket.history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3.connection.ssl.enabled": "false"
+    "spark.hadoop.fs.s3a.bucket.YOUR_BUCKET.endpoint": "rook-ceph-rgw-ocs-storagecluster-cephobjectstore.openshift-storage.svc"
+    "spark.hadoop.fs.s3a.bucket.YOUR_BUCKET.access.key": "YOUR_ACCESS_KEY"
+    "spark.hadoop.fs.s3a.bucket.YOUR_BUCKET.secret.key": "YOUR_SECRET_KEY"
+    "spark.hadoop.fs.s3a.bucket.YOUR_BUCKET.path.style.access": "true"
+    "spark.hadoop.fs.s3a.bucket.YOUR_BUCKET.connection.ssl.enabled": "false"
     # Metrics
     "spark.metrics.conf.*.source.jvm.class": "org.apache.spark.metrics.source.JvmSource"
     "spark.metrics.appStatusSource.enabled": "true"
