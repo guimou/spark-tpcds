@@ -1,0 +1,88 @@
+apiVersion: sparkoperator.k8s.io/v1beta2
+kind: SparkApplication
+metadata:
+  name: tpcds-benchmark-data-generation-1g
+spec:
+  type: Scala
+  image: quay.io/guimou/spark-benchmark:s3.0.1-h3.3.0_v0.0.1
+  sparkVersion: 3.0.1
+  mainClass: com.amazonaws.eks.tpcds.DataGeneration
+  mainApplicationFile: local:///opt/spark/examples/jars/eks-spark-benchmark-assembly-1.0.jar
+  mode: cluster
+  arguments:
+  # TPC-DS data location
+  #  - "s3a://obc-tpcds-data-bb56b95c-dad4-4ee5-b463-12122f39c0c4/TPCDS-TEST-1G"
+    - "s3a://history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3/TPCDS-TEST-1G"
+  #  - "/opt/spark/work-dir/1G"
+  # Path to kit in the docker image
+    - "/opt/tpcds-kit/tools"
+  # Data Format
+    - "parquet"
+  # Scale factor (in GB)
+    - "1"
+  # Generate data num partitions
+    - "100"
+  # Create the partitioned fact tables
+    - "false"
+  # Shuffle to get partitions coalesced into single files.
+    - "false"
+  # Logging set to WARN
+    - "true"
+  sparkConf:
+    "spark.kubernetes.local.dirs.tmpfs": "true"
+    "spark.speculation": "false"
+    "spark.network.timeout": "2400"
+    # History Server
+    "spark.eventLog.enabled": "true"
+    "spark.eventLog.dir": "s3a://history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3/logs-dir/"
+    # S3 Configuration for History server
+    "spark.hadoop.fs.s3a.bucket.history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3.endpoint": "rook-ceph-rgw-ocs-storagecluster-cephobjectstore.openshift-storage.svc"
+    "spark.hadoop.fs.s3a.bucket.history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3.access.key": "BSYJVOLA2SVU1USCAM2I"
+    "spark.hadoop.fs.s3a.bucket.history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3.secret.key": "JauG0OhwUVMqCztBMtp5E8bVGwSJT6QDzCxN7S5L"
+    "spark.hadoop.fs.s3a.bucket.history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3.path.style.access": "true"
+    "spark.hadoop.fs.s3a.bucket.history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3.connection.ssl.enabled": "false"
+    # S3 Configuration for Data bucket
+    # "spark.hadoop.fs.s3a.endpoint": "rook-ceph-rgw-ocs-storagecluster-cephobjectstore.openshift-storage.svc"
+    # "spark.hadoop.fs.s3a.ssl.enabled": "false"
+    # "spark.hadoop.fs.s3a.path.style.access": "true"
+    # "spark.hadoop.fs.s3a.access.key": "TTM5E5WCHFEC67OLL69N"
+    # "spark.hadoop.fs.s3a.secret.key": "mgBGkXFnj2yEvdOwc9fuvzPrzJpPW9B2TDPpCvvU"
+    # "spark.hadoop.fs.s3a.connection.timeout": "1200000"
+    # "spark.hadoop.fs.s3a.connection.maximum": "200"
+    # "spark.hadoop.fs.s3a.fast.upload": "true"
+    # "spark.hadoop.fs.s3a.readahead.range": "256K"
+    # "spark.hadoop.fs.s3a.input.fadvise": "random"
+    # "spark.hadoop.mapreduce.outputcommitter.factory.scheme.s3a": "org.apache.hadoop.fs.s3a.commit.S3ACommitterFactory"
+    # "spark.hadoop.fs.s3a.committer.name": "directory"
+    # "spark.hadoop.fs.s3a.committer.staging.conflict-mode": "append"
+    # History server
+    # "spark.eventLog.enabled": "true"
+    # "spark.eventLog.dir": "s3a://obc-tpcds-data-bb56b95c-dad4-4ee5-b463-12122f39c0c4/logs-dir/"
+    # S3 Configuration for History server
+    # "spark.hadoop.fs.s3a.bucket.history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3.endpoint": "rook-ceph-rgw-ocs-storagecluster-cephobjectstore.openshift-storage.svc"
+    # "spark.hadoop.fs.s3a.bucket.history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3.ssl.enabled": "false"
+    # "spark.hadoop.fs.s3a.bucket.history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3.path.style.access": "true"
+    # "spark.hadoop.fs.s3a.bucket.history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3.access.key": "BSYJVOLA2SVU1USCAM2I"
+    # "spark.hadoop.fs.s3a.bucket.history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3.secret.key": "JauG0OhwUVMqCztBMtp5E8bVGwSJT6QDzCxN7S5L"
+    # Metrics
+    # "spark.metrics.conf.*.source.jvm.class": "org.apache.spark.metrics.source.JvmSource"
+    # "spark.metrics.appStatusSource.enabled": "true"
+  driver:
+    cores: 2
+    coreLimit: "2048m"
+    memory: "8000m"
+    serviceAccount: 'spark-operator-spark'
+  executor:
+    instances: 3
+    cores: 1
+    coreLimit: "1"
+    memory: "8000m"
+    memoryOverhead: 2g
+  restartPolicy:
+    type: Never
+  monitoring:
+    exposeDriverMetrics: true
+    exposeExecutorMetrics: true
+    prometheus:
+      jmxExporterJar: "/prometheus/jmx_prometheus_javaagent-0.15.0.jar"
+      portName: 'tcp-prometheus'

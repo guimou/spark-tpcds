@@ -1,0 +1,7 @@
+apiVersion: objectbucket.io/v1alpha1
+kind: ObjectBucketClaim
+metadata:
+  name: obc-tpcds-data
+spec:
+  generateBucketName: obc-tpcds-data
+  storageClassName: ocs-storagecluster-ceph-rgw

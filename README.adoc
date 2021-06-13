@@ -1,0 +1,98 @@
+= TPC-DS Benchmark with Spark on OpenShift
+
+The following instructions are derived from link:https://github.com/aws-samples/eks-spark-benchmark[this project].
+
+We will built tools and run TPS-DS benchmarks on Spark 3.0.1 using an S3 storage data lake.
+
+== Prerequisite
+
+You will need a pre-built Spark image with the S3 connector built in. Refer to link:https://github.com/guimou/spark-on-openshift[this project].
+
+== Build Benchmark project image
+
+NOTE: You will need the `sbt` tool to build the dependency and the benchmark tool.
+
+=== Build dependencies
+
+* spark-sql-perf
+
+Latest version in maven central repo is 0.3.2 which is too old, we need to build a new libary from source. 
+
+.Get the source
+[source,bash]
+----
+git clone https://github.com/databricks/spark-sql-perf
+cd spark-sql-perf
+----
+
+Check/Edit the version of Spark or Scala you want to use in the file `build.sbt`.
+
+.Build spark-sql-perf dependency
+[source,bash]
+----
+sbt +package
+cp target/scala-2.12/spark-sql-perf_2.12-0.5.1-SNAPSHOT.jar <your-code-path>/benchmark/libs
+----
+
+=== Build Benchmark utility
+
+From the benchmark folder:
+
+[source,bash]
+----
+sbt assembly
+----
+
+=== Build Benchmark container image
+
+.Build from our pre-built Spark Image
+[source,bash]
+----
+docker build -t spark-benchmark:s3.0.1-h3.3.0_v0.0.1 --build-arg SPARK_BASE_IMAGE=quay.io/guimou/spark-odh:s3.0.1-h3.3.0_v0.0.2 .
+----
+
+.Tag and push the image
+[source,bash]
+----
+docker tag spark-benchmark:s3.0.1-h3.3.0_v0.0.1 quay.io/guimou/spark-benchmark:s3.0.1-h3.3.0_v0.0.1
+docker push quay.io/guimou/spark-benchmark:s3.0.1-h3.3.0_v0.0.1
+----
+
+== Run the benchmark
+
+In the `examples` folder you will find different examples to create the Datasets or Run the benchmark. You can adapt them to your environment: data location, logs location,...
+
+Following instructions use an S3 bucket for the Data, as well as the History Server as described link:https://github.com/guimou/spark-on-openshift[here].
+
+=== Data Store
+
+We'll create a bucket to hold the TPC-DS Data using and ObjectBucketClaim.
+
+NOTE: This OBC creates a bucket in the RGW from an OpenShift Data Foundation deployment. Adapt the instructions depending on your S3 provider.
+
+From the `test` folder:
+
+.Create the OBC
+[source,bash]
+----
+oc apply -f obc-tpcds-data.yaml
+----
+
+=== CPU and Memory limits adjustments
+
+By default OpenShift places restrictions on the size of the pods you can launch, which may be an issue for intensive workloads. We must adjust what the Spark-Operator is allowed to do when launching the driver and the executors.
+
+From the OpenShift UI, as a cluster-admin, go to Administration->LimitRanges and edit `spark-operator-core-resource-limits` according to your needs and the available resources. The parameters to change are the `max` for `cpu` and `memory` for both Containers and Pods.
+
+=== Data Generation
+
+From the `examples` folder, review and apply one of the file called `tpcds-data-generation-SIZE.yaml`. The `SIZE` in the filename indicates the size of the synthetic dataset created, in GB.
+In the file, choose the number or executors you want to run along with their sizing.
+
+.Run the data generation
+[source,bash]
+----
+oc apply -f tpcds-data-generation-1G.yaml
+----
+
+
