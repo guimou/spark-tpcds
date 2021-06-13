@@ -11,9 +11,7 @@ spec:
   mode: cluster
   arguments:
   # TPC-DS data location
-  #  - "s3a://obc-tpcds-data-bb56b95c-dad4-4ee5-b463-12122f39c0c4/TPCDS-TEST-1G"
-    - "s3a://history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3/TPCDS-TEST-1G-2"
-  #  - "/opt/spark/work-dir/1G"
+    - "s3a://history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3/TPCDS-TEST-1G"
   # Path to kit in the docker image
     - "/opt/tpcds-kit/tools"
   # Data Format
@@ -34,12 +32,6 @@ spec:
     # History Server
     "spark.eventLog.enabled": "true"
     "spark.eventLog.dir": "s3a://history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3/logs-dir/"
-    # S3 Configuration for History server
-    "spark.hadoop.fs.s3a.bucket.history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3.endpoint": "rook-ceph-rgw-ocs-storagecluster-cephobjectstore.openshift-storage.svc"
-    "spark.hadoop.fs.s3a.bucket.history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3.access.key": "BSYJVOLA2SVU1USCAM2I"
-    "spark.hadoop.fs.s3a.bucket.history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3.secret.key": "JauG0OhwUVMqCztBMtp5E8bVGwSJT6QDzCxN7S5L"
-    "spark.hadoop.fs.s3a.bucket.history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3.path.style.access": "true"
-    "spark.hadoop.fs.s3a.bucket.history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3.connection.ssl.enabled": "false"
     # S3 Configuration
     "spark.hadoop.fs.s3a.connection.timeout": "1200000"
     "spark.hadoop.fs.s3a.connection.maximum": "200"
@@ -49,6 +41,12 @@ spec:
     "spark.hadoop.mapreduce.outputcommitter.factory.scheme.s3a": "org.apache.hadoop.fs.s3a.commit.S3ACommitterFactory"
     "spark.hadoop.fs.s3a.committer.name": "directory"
     "spark.hadoop.fs.s3a.committer.staging.conflict-mode": "append"
+    # S3 Configuration for History server
+    "spark.hadoop.fs.s3a.bucket.history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3.endpoint": "rook-ceph-rgw-ocs-storagecluster-cephobjectstore.openshift-storage.svc"
+    "spark.hadoop.fs.s3a.bucket.history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3.access.key": "BSYJVOLA2SVU1USCAM2I"
+    "spark.hadoop.fs.s3a.bucket.history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3.secret.key": "JauG0OhwUVMqCztBMtp5E8bVGwSJT6QDzCxN7S5L"
+    "spark.hadoop.fs.s3a.bucket.history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3.path.style.access": "true"
+    "spark.hadoop.fs.s3a.bucket.history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3.connection.ssl.enabled": "false"
     # Metrics
     "spark.metrics.conf.*.source.jvm.class": "org.apache.spark.metrics.source.JvmSource"
     "spark.metrics.appStatusSource.enabled": "true"

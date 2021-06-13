@@ -2,19 +2,18 @@ apiVersion: "sparkoperator.k8s.io/v1beta2"
 kind: SparkApplication
 metadata:
   name: tpcds-benchmark-sql-1g
-  namespace: default
 spec:
   type: Scala
-  mode: cluster
-  image: seedjeffwan/spark:v2.4.5-examples
-  sparkVersion: 2.4.5
+  image: quay.io/guimou/spark-benchmark:s3.0.1-h3.3.0_v0.0.1
+  sparkVersion: 3.0.1
   mainClass: com.amazonaws.eks.tpcds.BenchmarkSQL
   mainApplicationFile: local:///opt/spark/examples/jars/eks-spark-benchmark-assembly-1.0.jar
+  mode: cluster
   arguments:
   # TPC-DS data localtion
-    - "s3a://spark-k8s-data/TPCDS-TEST-1G"
+    - "s3a://history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3/TPCDS-TEST-1G"
   # results location
-    - "s3a://spark-k8s-data/TPCDS-TEST-1G-RESULT"
+    - "s3a://history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3/TPCDS-TEST-1G-RESULT"
   # Path to kit in the docker image
     - "/opt/tpcds-kit/tools"
   # Data Format
@@ -37,30 +36,40 @@ spec:
     "spark.sql.crossJoin.enabled": "true"
     "spark.sql.parquet.mergeSchema": "false"
     "spark.sql.parquet.filterPushdown": "true"
-    # S3 credential
-    "spark.hadoop.fs.s3a.aws.credentials.provider": "com.amazonaws.auth.InstanceProfileCredentialsProvider"
-    # S3 Specific config
+    # S3 Configuration
     "spark.hadoop.fs.s3a.connection.timeout": "1200000"
-    "spark.hadoop.fs.s3a.path.style.access": "true"
     "spark.hadoop.fs.s3a.connection.maximum": "200"
     "spark.hadoop.fs.s3a.fast.upload": "true"
     "spark.hadoop.fs.s3a.readahead.range": "256K"
     "spark.hadoop.fs.s3a.input.fadvise": "random"
-    # S3A Committer
     "spark.hadoop.mapreduce.outputcommitter.factory.scheme.s3a": "org.apache.hadoop.fs.s3a.commit.S3ACommitterFactory"
-    # "spark.sql.sources.commitProtocolClass": "org.apache.spark.internal.io.cloud.PathOutputCommitProtocol"
-    # "spark.sql.parquet.output.committer.class": "org.apache.hadoop.mapreduce.lib.output.BindingPathOutputCommitter"
     "spark.hadoop.fs.s3a.committer.name": "directory"
     "spark.hadoop.fs.s3a.committer.staging.conflict-mode": "append"
+    # S3 Configuration for History server
+    "spark.hadoop.fs.s3a.bucket.history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3.endpoint": "rook-ceph-rgw-ocs-storagecluster-cephobjectstore.openshift-storage.svc"
+    "spark.hadoop.fs.s3a.bucket.history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3.access.key": "BSYJVOLA2SVU1USCAM2I"
+    "spark.hadoop.fs.s3a.bucket.history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3.secret.key": "JauG0OhwUVMqCztBMtp5E8bVGwSJT6QDzCxN7S5L"
+    "spark.hadoop.fs.s3a.bucket.history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3.path.style.access": "true"
+    "spark.hadoop.fs.s3a.bucket.history-rgw-58b57495-ffa7-45cd-a85c-8d036dcac8f3.connection.ssl.enabled": "false"
+    # Metrics
+    "spark.metrics.conf.*.source.jvm.class": "org.apache.spark.metrics.source.JvmSource"
+    "spark.metrics.appStatusSource.enabled": "true"
   driver:
     cores: 2
     coreLimit: "2048m"
     memory: "8000m"
-    serviceAccount: spark
+    serviceAccount: 'spark-operator-spark'
   executor:
     instances: 3
     cores: 1
+    coreLimit: "1"
     memory: "8000m"
     memoryOverhead: "2g"
   restartPolicy:
     type: Never
+  monitoring:
+    exposeDriverMetrics: true
+    exposeExecutorMetrics: true
+    prometheus:
+      jmxExporterJar: "/prometheus/jmx_prometheus_javaagent-0.15.0.jar"
+      portName: 'tcp-prometheus'
