@@ -1,3 +1,9 @@
-**/target
+#**/target/scala-2.12/classes/*
+#**/target/scala-2.12/resolution-cache/*
+#**/target/streams/*
+**/target/*
+!benchmark/target/scala-2.12/
+benchmark/target/scala-2.12/*
+!benchmark/target/scala-2.12/eks-spark-benchmark-assembly-1.0.jar
 *.env
 *.devel

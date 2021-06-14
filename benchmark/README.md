@@ -1,5 +1,11 @@
 ## Spark on Kubernetes benchmark utility
 
+--------------
+
+NOTE: Those are the original instructions to build the Benchmark tool!
+
+--------------
+
 This repository is used to benchmark Spark performance on Kubernetes.
 
 We highly recommend you to use our provided images like `seedjeffwan/spark:v2.4.5-examples` or `seedjeffwan/spark:3.0.0-SNAPSHOT-examples` because it has some critital performance improvements which are not in the 2.4.5 distribution yet. Features like `tmpfs` and `hostPath` volume for spark scratch space are not avalable in v2.4.5.
